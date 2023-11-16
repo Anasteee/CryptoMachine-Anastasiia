@@ -1,81 +1,59 @@
 package org.javarush.anastasiia.cipher;
 
-import org.javarush.anastasiia.Action;
-import org.javarush.anastasiia.FileService;
+import org.javarush.anastasiia.LanguageNotFoundException;
+import org.javarush.anastasiia.alphabet.Alphabet;
+import org.javarush.anastasiia.language.Language;
+import org.javarush.anastasiia.language.LanguageProcessor;
+import org.javarush.anastasiia.language.Text;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.IOException;
+import java.util.List;
+
 
 public class CaesarCipher implements Cipher {
 
-    public static void encryption(String filePath, int key) throws IOException {
-        BufferedReader reader = FileService.createFileReader(filePath);
-        StringBuilder stringBuilder = new StringBuilder();
-        while (reader.ready()) {
-            for (char c :
-                    reader.readLine().toCharArray()) {
-                stringBuilder.append(encryptACharacter(c, key));
-            }
-            stringBuilder.append("\n");
-        }
-        reader.close();
-        BufferedWriter writer = FileService.createFileWriter(filePath, Action.ENCRYPTED);
-        writer.write(String.valueOf(stringBuilder));
-        writer.close();
+
+    private LanguageProcessor languageProcessor;
+
+    private Alphabet rotatedAlphabet;
+
+
+    public CaesarCipher(LanguageProcessor processor) {
+        this.languageProcessor = processor;
     }
 
-    public static void decryption(String filePath, int key) throws IOException {
-        BufferedReader reader = FileService.createFileReader(filePath);
-        StringBuilder stringBuilder = new StringBuilder();
-        while (reader.ready()) {
-            for (char c :
-                    reader.readLine().toCharArray()) {
-                stringBuilder.append(decryptACharacter(c, key));
-            }
-            stringBuilder.append("\n");
-        }
-        reader.close();
-        BufferedWriter writer = FileService.createFileWriter(filePath, Action.DECRYPTED);
-        writer.write(String.valueOf(stringBuilder));
-        writer.close();
-    }
+    public String encrypt(Text source, int key) {
+        Language language = source.getLanguage();
 
-    private static char encryptACharacter(char c, int key) {
-        char newCharacter = c;
-        if (Character.isLetter(c)) {
-            newCharacter += (char) key;
-            if (!isSmallLetter(newCharacter) && !isBigLetter(newCharacter)) {
-                if (isBigLetter(c)) {
-                    newCharacter = (char) (newCharacter - 90 + 64);
-                } else {
-                    newCharacter = (char) (newCharacter - 122 + 96);
-                }
+        rotatedAlphabet = language.getAlphabet().getRotated(key);
+
+        StringBuilder result = new StringBuilder();
+
+        for (char character : source.getText().toCharArray()) {
+
+            if (language.getAlphabet().containsIgnoreCase(character)) {
+                result.append(processChar(character, language));
+            } else {
+                result.append(character);
             }
         }
-        return newCharacter;
+
+        return result.toString();
     }
 
-    private static char decryptACharacter(char c, int key) {
-        char newCharacter = c;
-        if (Character.isLetter(c)) {
-            newCharacter -= (char) key;
-            if (!isSmallLetter(newCharacter) && !isBigLetter(newCharacter)) {
-                if (isBigLetter(c)) {
-                    newCharacter = (char) (91 - (65 - newCharacter));
-                } else {
-                    newCharacter = (char) (123 - (97 - newCharacter));
-                }
-            }
+    public String decrypt(Text source, int key) {
+        return encrypt(source, key * -1);
+    }
+
+    private Character processChar(Character character, Language language){
+        Character processedChar = rotatedAlphabet.get(language.getAlphabet().indexOfIgnoreCase(character));
+        if(Character.isUpperCase(character)){
+            processedChar = Character.toUpperCase(processedChar);
         }
-        return newCharacter;
+        return processedChar;
     }
 
-    private static boolean isSmallLetter(char c) {
-        return c >= 97 && c <= 122;
-    }
 
-    private static boolean isBigLetter(char c) {
-        return c >= 65 && c <= 90;
-    }
+
 }
+
+

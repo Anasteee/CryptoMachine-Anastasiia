@@ -21,7 +21,7 @@ class MainTest {
     private static final boolean UKRAINIAN_LANGUAGE_TEST = true;
     private final String ENCRYPT_COMMAND = "ENCRYPT";
     private final String DECRYPT_COMMAND = "DECRYPT";
-    private final String BF_COMMAND = "BRUTEFORCE";
+    private final String BF_COMMAND = "BRUTE_FORCE";
     private final String hamlet_EN = """
             THE TRAGEDY OF HAMLET, PRINCE OF DENMARK
 
@@ -279,7 +279,7 @@ class MainTest {
 
             String bruteForcedText = readFile(bruteForcedFilePath);
 
-            assertTrue(hamlet_EN.equalsIgnoreCase(bruteForcedText), "Decrypted text is not the same as original even in ignore case");
+            assertEquals(hamlet_EN.toLowerCase(), bruteForcedText.toLowerCase(), "Decrypted text is not the same as original even in ignore case");
             assertEquals(hamlet_EN, bruteForcedText, "Decrypted text is not the same");
         }
     }
